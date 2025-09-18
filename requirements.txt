@@ -1,0 +1,12 @@
+flask
+flask-cors
+pandas
+numpy
+scikit-learn
+joblib
+python-dotenv
+gunicorn
+pydantic
+openai>=1.12.0
+requests>=2.31.0
+python-dotenv
