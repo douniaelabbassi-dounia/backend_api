@@ -31,3 +31,7 @@ def _form_options():
         locations=["Casablanca", "Rabat", "Fes", "Marrakech", "Tangier", "Agadir", "Remote"],
         levels=["Intern", "Junior", "Mid", "Senior", "Lead"]
     )
+
+@bp.get("/chat")
+def chat_page():
+    return render_template("chat.html")

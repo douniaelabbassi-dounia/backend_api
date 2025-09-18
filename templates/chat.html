@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>HR Agent – Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+  <style>
+    .chat { max-width: 900px; margin: 0 auto; background: #fff; padding: 1rem 1.5rem; border-radius: 12px; }
+    .row { display: flex; gap: .5rem; margin-top: .5rem; }
+    .msg { padding: .6rem .8rem; border-radius: 10px; margin: .4rem 0; }
+    .user { background: #e9f5ff; align-self: flex-end; }
+    .assistant { background: #f7f7f9; }
+    .bubble { white-space: pre-wrap; }
+    .who { font-size: .8rem; color: #666; margin-bottom: .3rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HR Agent – Chat</h1>
+    <div id="messages" class="chat"></div>
+    <form id="chat-form" class="row">
+      <input id="chat-input" type="text" placeholder="Pose ta question…" style="flex:1" required />
+      <button type="submit">Envoyer</button>
+    </form>
+  </div>
+
+<script>
+const messagesEl = document.getElementById('messages');
+const formEl = document.getElementById('chat-form');
+const inputEl = document.getElementById('chat-input');
+
+const history = []; // {role:"user"/"assistant", content:"..."}
+
+function append(role, text) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (role === 'user' ? 'user' : 'assistant');
+  wrap.innerHTML = `<div class="who">${role}</div><div class="bubble">${text}</div>`;
+  messagesEl.appendChild(wrap);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+formEl.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  append('user', text);
+  history.push({ role: 'user', content: text });
+  inputEl.value = '';
+  append('assistant', '…'); // placeholder
+
+  try {
+    const res = await fetch('/api/agent/chat', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ history })
+    });
+    const json = await res.json();
+    const msg = json.message || {};
+    const last = messagesEl.lastElementChild;
+    last.querySelector('.bubble').textContent = msg.content || '(pas de réponse)';
+    history.push({ role: msg.role || 'assistant', content: msg.content || '' });
+  } catch (err) {
+    const last = messagesEl.lastElementChild;
+    last.querySelector('.bubble').textContent = 'Erreur: ' + err;
+  }
+});
+</script>
+</body>
+</html>
